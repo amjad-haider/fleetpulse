@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package fleetpulse.telemetry.v1;
+
+option java_package = "com.fleetpulse.proto.telemetry.v1";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+message TelemetryRecord {
+  string vehicle_id = 1;
+  google.protobuf.Timestamp recorded_at = 2;
+  double engine_temp_c = 3;
+  double vibration_mm_s = 4;
+  int32 rpm = 5;
+  double fuel_level_pct = 6;
+  double brake_wear_pct = 7;
+  repeated string fault_codes = 8;
+  double odometer_km = 9;
+}
+
+message TelemetryAck {
+  string vehicle_id = 1;
+  int32 records_received = 2;
+}
+
+service TelemetryIngestion {
+  // vehicle-simulator opens one stream per vehicle and keeps pushing
+  // records on an interval, telemetry-service acks periodically
+  rpc StreamTelemetry(stream TelemetryRecord) returns (stream TelemetryAck);
+}

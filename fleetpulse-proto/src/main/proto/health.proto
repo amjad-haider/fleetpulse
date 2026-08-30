@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package fleetpulse.health.v1;
+
+option java_package = "com.fleetpulse.proto.health.v1";
+option java_multiple_files = true;
+
+// features are pre-aggregated by telemetry-service before calling health-engine,
+// same idea as feeding a feature vector into a model instead of raw sensor data
+message HealthScoreRequest {
+  string vehicle_id = 1;
+  double engine_temp_c = 2;
+  double vibration_mm_s = 3;
+  int32 rpm = 4;
+  double brake_wear_pct = 5;
+  int32 fault_code_count = 6;
+  double odometer_km = 7;
+  double avg_engine_temp_30d = 8;
+  double temp_deviation = 9;
+  int32 fault_events_24h = 10;
+}
+
+enum HealthDecision {
+  HEALTH_DECISION_UNSPECIFIED = 0;
+  OK = 1;
+  MONITOR = 2;
+  SERVICE_NOW = 3;
+}
+
+message HealthScoreResponse {
+  string vehicle_id = 1;
+  double risk_score = 2;
+  HealthDecision decision = 3;
+  bool used_fallback = 4;
+}
+
+service HealthScoring {
+  rpc ScoreVehicle(HealthScoreRequest) returns (HealthScoreResponse);
+}
