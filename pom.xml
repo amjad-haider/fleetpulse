@@ -16,10 +16,36 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <grpc.version>1.68.1</grpc.version>
     <protobuf.version>4.28.3</protobuf.version>
+    <spring-boot.version>3.5.14</spring-boot.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 
   <modules>
     <module>fleetpulse-proto</module>
+    <module>fleet-service</module>
   </modules>
 
 </project>
