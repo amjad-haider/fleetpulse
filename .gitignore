@@ -1,0 +1,42 @@
+# Java / Maven
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.vs/
+*.iws
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.egg-info/
+
+# C++/C#
+build/
+cmake-build-*/
+*.o
+*.obj
+bin/
+obj/
+
+# Node (Vaadin frontend build)
+node_modules/
+frontend/generated/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+*.local
+
+# Logs
+*.log
