@@ -8,9 +8,7 @@ service flags the ones that need maintenance before they actually break down,
 and an ops dashboard shows fleet health at a glance.
 
 Building this to get hands-on with the stack I don't use day to day at work
-(gRPC, Kafka, Spring microservices, Vaadin) while staying close to a domain I
-know well from my M.Sc. in commercial vehicle technology.
-
+(gRPC, Kafka, Spring microservices, Vaadin) 
 ## Planned pieces
 
 - `vehicle-simulator`: fakes a fleet of vehicle ECUs pushing telemetry over gRPC
