@@ -1,8 +1,10 @@
 package com.fleetpulse.fleet.vehicle;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fleetpulse.fleet.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -21,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(VehicleController.class)
+@AutoConfigureMockMvc(addFilters = false) // security is covered separately in AuthFlowIntegrationTest
 class VehicleControllerTest {
 
     @Autowired
@@ -31,6 +34,12 @@ class VehicleControllerTest {
 
     @MockitoBean
     private VehicleService vehicleService;
+
+    // JwtAuthFilter is picked up as a servlet Filter by the @WebMvcTest slice even
+    // though addFilters=false keeps it out of the actual chain, so it still needs
+    // its constructor dependency satisfied
+    @MockitoBean
+    private JwtService jwtService;
 
     @Test
     void registerReturns201WithLocation() throws Exception {

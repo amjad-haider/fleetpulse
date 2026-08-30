@@ -15,3 +15,9 @@ spring:
       hibernate:
         format_sql: true
     open-in-view: false
+
+security:
+  jwt:
+    # dev-only fallback, real deployments must set JWT_SECRET
+    secret: ${JWT_SECRET:this-is-a-dev-only-jwt-signing-secret-do-not-use-in-prod-00000}
+    expiration-ms: ${JWT_EXPIRATION_MS:3600000}
