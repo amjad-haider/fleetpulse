@@ -105,7 +105,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # fleetpulse-proto has to be installed to the local repo *first*, as its
+      # every module's pom.xml points back at the root pom as its <parent>,
+      # so that has to be installed too, not just fleetpulse-proto itself,
+      # or resolving it fails the same way.
+      - name: Install the parent pom
+        run: mvn -B -N install
+
+      # fleetpulse-proto has to be installed to the local repo too, as its
       # own real `install`, before building an image for anything that depends
       # on it. Running `spring-boot:build-image` directly with -am pulls proto
       # into the same reactor and tries to run that goal against it too, and
