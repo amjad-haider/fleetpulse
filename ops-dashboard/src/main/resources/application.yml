@@ -1,0 +1,15 @@
+server:
+  port: ${SERVER_PORT:8090}
+
+spring:
+  application:
+    name: ops-dashboard
+
+vaadin:
+  launch-browser: false
+
+fleetpulse:
+  services:
+    fleet-service-url: ${FLEET_SERVICE_URL:http://localhost:8081}
+    health-engine-url: ${HEALTH_ENGINE_URL:http://localhost:8085}
+    alert-service-url: ${ALERT_SERVICE_URL:http://localhost:8084}

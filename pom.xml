@@ -59,6 +59,7 @@
     <module>telemetry-service</module>
     <module>health-engine</module>
     <module>alert-service</module>
+    <module>ops-dashboard</module>
   </modules>
 
 </project>

@@ -28,7 +28,8 @@ obj/
 
 # Node (Vaadin frontend build)
 node_modules/
-frontend/generated/
+**/frontend/generated/
+**/.vite/
 
 # OS
 .DS_Store
