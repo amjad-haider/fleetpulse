@@ -21,14 +21,15 @@ ich im Arbeitsalltag nicht nutze (gRPC, Kafka, Spring-Microservices, Vaadin)
 - `telemetry-service`: gRPC-Ingestion, Persistierung in Postgres, Veröffentlichung auf Kafka
 - `health-engine`: Risiko-Scoring, aktuell regelbasiert, konsumiert Kafka und stellt gRPC bereit
 - `alert-service`: wandelt Risikoereignisse in Benachrichtigungen um, mit Cooldown gegen Spam
-- `ops-dashboard`: Vaadin-Oberfläche mit Fahrzeugen, Health-Scores und Alerts
+- `ops-dashboard`: Vaadin-Oberfläche mit Fahrzeugen, Health-Scores und Alerts, läuft jetzt über das Gateway
 - `ml-training`: Python, trainiert ein gradient-boosted Risikomodell, Export nach ONNX (noch nicht an health-engine angebunden)
+- `gateway-service`: Spring Cloud Gateway, einheitlicher Einstiegspunkt, validiert JWTs zentral, damit fleet-service, health-engine und alert-service das nicht jeweils selbst tun müssen
 
 ## Noch offen
 
 - trainiertes ONNX-Modell in `health-engine` laden, abgesichert durch einen Circuit Breaker mit der Regel-Engine als Fallback
 - `maintenance-service`: Arbeitsaufträge, gleicht Vorhersagen mit tatsächlicher Wartung ab
-- `gateway-service`: einheitlicher Einstiegspunkt, Routing, Authentifizierung
+- Rate Limiting im Gateway (braucht Redis, das auch für die geplanten Rolling-Features in health-engine sinnvoll wäre)
 - Vaadin-Produktionsbuild für `ops-dashboard`, damit es ebenfalls containerisiert werden kann
 - Unterscheidung zwischen ADMIN und FLEET_MANAGER in `fleet-service` (aktuell verhalten sich beide Rollen identisch)
 

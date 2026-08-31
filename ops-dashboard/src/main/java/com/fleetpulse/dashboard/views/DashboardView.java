@@ -117,12 +117,12 @@ public class DashboardView extends VerticalLayout implements BeforeEnterObserver
             notifyFailure("vehicles", ex);
         }
         try {
-            scoreGrid.setItems(healthEngineClient.recentScores());
+            scoreGrid.setItems(healthEngineClient.recentScores(token));
         } catch (Exception ex) {
             notifyFailure("health scores", ex);
         }
         try {
-            alertGrid.setItems(alertServiceClient.recentAlerts());
+            alertGrid.setItems(alertServiceClient.recentAlerts(token));
         } catch (Exception ex) {
             notifyFailure("alerts", ex);
         }

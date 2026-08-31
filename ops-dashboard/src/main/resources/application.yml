@@ -10,6 +10,8 @@ vaadin:
 
 fleetpulse:
   services:
-    fleet-service-url: ${FLEET_SERVICE_URL:http://localhost:8081}
-    health-engine-url: ${HEALTH_ENGINE_URL:http://localhost:8085}
-    alert-service-url: ${ALERT_SERVICE_URL:http://localhost:8084}
+    # all three now go through gateway-service instead of each service's own
+    # port directly, that's the whole point of having a gateway
+    fleet-service-url: ${FLEET_SERVICE_URL:http://localhost:8080}
+    health-engine-url: ${HEALTH_ENGINE_URL:http://localhost:8080}
+    alert-service-url: ${ALERT_SERVICE_URL:http://localhost:8080}

@@ -20,14 +20,15 @@ Building this to get hands-on with the stack I don't use day to day at work
 - `telemetry-service`: gRPC ingestion, persists to Postgres, publishes to Kafka
 - `health-engine`: risk scoring, currently rule-based, consumes Kafka + exposes gRPC
 - `alert-service`: turns risk events into notifications, with cooldown so it doesn't spam
-- `ops-dashboard`: Vaadin UI showing vehicles, health scores, and alerts
+- `ops-dashboard`: Vaadin UI showing vehicles, health scores, and alerts, now routed through the gateway
 - `ml-training`: Python, trains a gradient-boosted risk model, exports to ONNX (not wired into health-engine yet)
+- `gateway-service`: Spring Cloud Gateway, single entry point, validates JWTs centrally so fleet-service, health-engine, and alert-service don't each have to
 
 ## Still to do
 
 - Load the trained ONNX model into `health-engine` behind a circuit breaker, with the rule engine as fallback
 - `maintenance-service`: work orders, reconciles predictions against actual maintenance
-- `gateway-service`: single entry point, routing, auth
+- Rate limiting at the gateway (needs Redis, which health-engine's rolling-feature work will also want)
 - Production Vaadin build for `ops-dashboard` so it can be containerized too
 - ADMIN vs FLEET_MANAGER role distinction in `fleet-service` (both currently behave the same)
 

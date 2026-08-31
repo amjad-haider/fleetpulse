@@ -60,6 +60,7 @@
     <module>health-engine</module>
     <module>alert-service</module>
     <module>ops-dashboard</module>
+    <module>gateway-service</module>
   </modules>
 
 </project>
