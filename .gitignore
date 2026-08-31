@@ -17,6 +17,10 @@ __pycache__/
 venv/
 .venv/
 *.egg-info/
+.pytest_cache/
+
+# regenerable training data, keep the exported model + metrics though
+ml-training/data/*.csv
 
 # C++/C#
 build/
