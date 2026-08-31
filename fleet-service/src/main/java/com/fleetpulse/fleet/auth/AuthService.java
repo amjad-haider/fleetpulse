@@ -25,11 +25,16 @@ public class AuthService {
             throw new EmailAlreadyRegisteredException(request.email());
         }
 
+        // no separate admin-provisioning flow exists, so the first person to
+        // register becomes ADMIN and everyone after that is a FLEET_MANAGER,
+        // same bootstrap pattern a lot of self-hosted tools use
+        UserRole role = userRepository.existsByRole(UserRole.ADMIN) ? UserRole.FLEET_MANAGER : UserRole.ADMIN;
+
         User user = User.builder()
                 .email(request.email())
                 .passwordHash(passwordEncoder.encode(request.password()))
                 .fullName(request.fullName())
-                .role(UserRole.FLEET_MANAGER)
+                .role(role)
                 .build();
         userRepository.save(user);
 

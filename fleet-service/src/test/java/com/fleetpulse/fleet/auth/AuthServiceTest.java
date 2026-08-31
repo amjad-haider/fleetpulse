@@ -42,9 +42,10 @@ class AuthServiceTest {
     }
 
     @Test
-    void registerCreatesFleetManagerAndReturnsToken() {
+    void registerCreatesFleetManagerWhenAnAdminAlreadyExists() {
         RegisterRequest request = new RegisterRequest("new.manager@fleetpulse.dev", "hunter2hunter2", "New Manager");
         when(userRepository.existsByEmail(request.email())).thenReturn(false);
+        when(userRepository.existsByRole(UserRole.ADMIN)).thenReturn(true);
         when(passwordEncoder.encode(request.password())).thenReturn("hashed-password");
         when(jwtService.generateToken(any(User.class))).thenReturn("signed-token");
         when(jwtService.expiryOf("signed-token")).thenReturn(Instant.now().plusSeconds(3600));
@@ -58,6 +59,26 @@ class AuthServiceTest {
         verify(userRepository).save(captor.capture());
         assertThat(captor.getValue().getPasswordHash()).isEqualTo("hashed-password");
         assertThat(captor.getValue().getRole()).isEqualTo(UserRole.FLEET_MANAGER);
+    }
+
+    @Test
+    void registerCreatesAdminWhenNoAdminExistsYet() {
+        // bootstrap: the first person to register becomes ADMIN, since there's
+        // no separate admin-provisioning flow
+        RegisterRequest request = new RegisterRequest("first.user@fleetpulse.dev", "hunter2hunter2", "First User");
+        when(userRepository.existsByEmail(request.email())).thenReturn(false);
+        when(userRepository.existsByRole(UserRole.ADMIN)).thenReturn(false);
+        when(passwordEncoder.encode(request.password())).thenReturn("hashed-password");
+        when(jwtService.generateToken(any(User.class))).thenReturn("signed-token");
+        when(jwtService.expiryOf("signed-token")).thenReturn(Instant.now().plusSeconds(3600));
+
+        AuthResponse response = authService.register(request);
+
+        assertThat(response.role()).isEqualTo(UserRole.ADMIN);
+
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+        assertThat(captor.getValue().getRole()).isEqualTo(UserRole.ADMIN);
     }
 
     @Test

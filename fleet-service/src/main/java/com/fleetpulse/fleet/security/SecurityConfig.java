@@ -45,10 +45,24 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // no anonymous principal: a missing/invalid token should read as 401, not 403
                 .anonymous(AbstractHttpConfigurer::disable)
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(
-                        (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
+                // explicit about both cases: no/invalid token is 401, a valid token
+                // without the right role is 403. Leaving the access-denied case to
+                // Spring Security's default here was actually routing it through
+                // the entry point too, i.e. also 401 -- not the distinction a REST
+                // API should make between "who are you" and "you can't do that"
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                        .accessDeniedHandler((request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN)))
                 .authorizeHttpRequests(auth -> auth
+                        // sendError() triggers an internal forward to /error, which re-runs
+                        // this whole filter chain on that new path. Our JwtAuthFilter (a
+                        // OncePerRequestFilter) skips itself on error dispatch by design, so
+                        // without this, that second pass finds no authentication at all and
+                        // silently overwrites whatever status the original handler set (e.g.
+                        // a correctly-produced 403 turning into a 401) with its own rejection
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/vehicles").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/vehicles/*/status").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .anyRequest().authenticated()

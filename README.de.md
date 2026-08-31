@@ -17,7 +17,7 @@ ich im Arbeitsalltag nicht nutze (gRPC, Kafka, Spring-Microservices, Vaadin)
 
 - `fleetpulse-proto`: gemeinsame gRPC-Contracts für Telemetrie und Health-Scoring
 - `vehicle-simulator`: C#-Konsolenanwendung, simuliert eine Fahrzeugflotte, die Telemetriedaten per gRPC sendet
-- `fleet-service`: Fahrzeug- und Fahrerregister, JWT-Authentifizierung
+- `fleet-service`: Fahrzeug- und Fahrerregister, JWT-Authentifizierung, ADMIN/FLEET_MANAGER-Rollen mit echtem Unterschied (die erste registrierte Person wird ADMIN)
 - `telemetry-service`: gRPC-Ingestion, Persistierung in Postgres, Veröffentlichung auf Kafka
 - `health-engine`: Risiko-Scoring, aktuell regelbasiert, konsumiert Kafka und stellt gRPC bereit
 - `alert-service`: wandelt Risikoereignisse in Benachrichtigungen um, mit Cooldown gegen Spam
@@ -31,7 +31,6 @@ ich im Arbeitsalltag nicht nutze (gRPC, Kafka, Spring-Microservices, Vaadin)
 - `maintenance-service`: Arbeitsaufträge, gleicht Vorhersagen mit tatsächlicher Wartung ab
 - Rate Limiting im Gateway (braucht Redis, das auch für die geplanten Rolling-Features in health-engine sinnvoll wäre)
 - Vaadin-Produktionsbuild für `ops-dashboard`, damit es ebenfalls containerisiert werden kann
-- Unterscheidung zwischen ADMIN und FLEET_MANAGER in `fleet-service` (aktuell verhalten sich beide Rollen identisch)
 
 ## Status
 
