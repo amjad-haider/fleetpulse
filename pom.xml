@@ -28,6 +28,16 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <!-- pins every io.grpc artifact to one version across the reactor, otherwise
+           starters like grpc-server-spring-boot-starter drag in their own transitive
+           grpc-core and you get classpath conflicts (NoClassDefFoundError at runtime) -->
+      <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-bom</artifactId>
+        <version>${grpc.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -46,6 +56,7 @@
   <modules>
     <module>fleetpulse-proto</module>
     <module>fleet-service</module>
+    <module>telemetry-service</module>
   </modules>
 
 </project>
