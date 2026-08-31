@@ -1,5 +1,7 @@
 [English](README.md)
 
+[![CI](https://github.com/amjad-haider/fleetpulse/actions/workflows/ci.yml/badge.svg)](https://github.com/amjad-haider/fleetpulse/actions/workflows/ci.yml)
+
 # FleetPulse
 
 Plattform zur vorausschauenden Wartung von Nutzfahrzeugflotten. Simulierte
@@ -11,18 +13,27 @@ der Flotte auf einen Blick.
 Ich baue das Projekt, um praktische Erfahrung mit Technologien zu sammeln, die
 ich im Arbeitsalltag nicht nutze (gRPC, Kafka, Spring-Microservices, Vaadin)
 
-## Geplante Komponenten
+## Bisher gebaut
 
-- `vehicle-simulator`: simuliert eine Fahrzeugflotte, die Telemetriedaten per gRPC sendet
-- `fleet-service`: Fahrzeug- und Fahrerregister, Authentifizierung
-- `telemetry-service`: gRPC-Ingestion, Persistierung, Veröffentlichung auf Kafka
-- `health-engine`: Risiko-Scoring (trainiertes Modell mit regelbasiertem Fallback)
-- `alert-service`: wandelt Risikoereignisse in Wartungsalarme um
+- `fleetpulse-proto`: gemeinsame gRPC-Contracts für Telemetrie und Health-Scoring
+- `vehicle-simulator`: C#-Konsolenanwendung, simuliert eine Fahrzeugflotte, die Telemetriedaten per gRPC sendet
+- `fleet-service`: Fahrzeug- und Fahrerregister, JWT-Authentifizierung
+- `telemetry-service`: gRPC-Ingestion, Persistierung in Postgres, Veröffentlichung auf Kafka
+- `health-engine`: Risiko-Scoring, aktuell regelbasiert, konsumiert Kafka und stellt gRPC bereit
+- `alert-service`: wandelt Risikoereignisse in Benachrichtigungen um, mit Cooldown gegen Spam
+- `ops-dashboard`: Vaadin-Oberfläche mit Fahrzeugen, Health-Scores und Alerts
+- `ml-training`: Python, trainiert ein gradient-boosted Risikomodell, Export nach ONNX (noch nicht an health-engine angebunden)
+
+## Noch offen
+
+- trainiertes ONNX-Modell in `health-engine` laden, abgesichert durch einen Circuit Breaker mit der Regel-Engine als Fallback
 - `maintenance-service`: Arbeitsaufträge, gleicht Vorhersagen mit tatsächlicher Wartung ab
-- `ops-dashboard`: Vaadin-Oberfläche für Flottenmanager
-- `ml-training`: Python, trainiert das Scoring-Modell, Export nach ONNX
+- `gateway-service`: einheitlicher Einstiegspunkt, Routing, Authentifizierung
+- Vaadin-Produktionsbuild für `ops-dashboard`, damit es ebenfalls containerisiert werden kann
+- Unterscheidung zwischen ADMIN und FLEET_MANAGER in `fleet-service` (aktuell verhalten sich beide Rollen identisch)
 
 ## Status
 
-Bisher nur das Grundgerüst des Repos. Wird Service für Service aufgebaut,
-dieses Readme wird laufend aktualisiert.
+Jeder Service oben hat echte Tests und wurde tatsächlich gegen echtes
+Postgres/Kafka ausgeführt, nicht nur anhand des Codes vertraut. CI baut das
+gesamte Projekt bei jedem Push.

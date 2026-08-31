@@ -1,0 +1,117 @@
+name: CI
+
+# When this workflow runs:
+# - every push to master (so we know master never sits broken)
+# - every pull request targeting master (so we catch problems before merging)
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  # the Java multi-module Maven project: fleetpulse-proto, fleet-service,
+  # telemetry-service, health-engine, alert-service, ops-dashboard
+  test-java:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven # caches ~/.m2 so we're not redownloading every dependency on every run
+
+      # runs the whole reactor: proto codegen, then every module's tests,
+      # in the right dependency order, automatically. The integration tests
+      # that spin up real Postgres/Kafka via Testcontainers work here too,
+      # GitHub's hosted runners come with Docker already running.
+      - name: Build and test
+        run: mvn -B test
+
+  # the C# telemetry simulator
+  test-dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Test
+        working-directory: vehicle-simulator
+        run: dotnet test
+
+  # the Python model-training pipeline
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: ml-training
+        run: pip install -r requirements.txt
+
+      - name: Generate data and run tests
+        working-directory: ml-training
+        run: |
+          python generate_data.py
+          python -m pytest tests/ -v
+
+  # packages the four long-running backend services into container images and
+  # pushes them to GitHub's own registry (ghcr.io). Only runs after both Java
+  # and .NET tests pass, and only for real pushes to master, never for pull
+  # requests, since a PR build (possibly from someone else's fork) shouldn't
+  # get credentials to publish images.
+  #
+  # ops-dashboard is deliberately left out: it needs a Vaadin production
+  # frontend build first (today it only runs in dev mode), that's a separate
+  # piece of work. vehicle-simulator and ml-training aren't long-running
+  # services you'd deploy the same way, so they don't get container images
+  # either.
+  build-images:
+    needs: [test-java, test-dotnet]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        service: [fleet-service, telemetry-service, health-engine, alert-service]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Spring Boot can build a container image straight from the Maven build
+      # with no Dockerfile at all, via Cloud Native Buildpacks. It figures out
+      # the base image, JRE, and layering on its own.
+      - name: Build container image
+        run: >
+          mvn -B -pl ${{ matrix.service }} -am spring-boot:build-image
+          -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository_owner }}/fleetpulse-${{ matrix.service }}:${{ github.sha }}
+
+      - name: Push image
+        run: docker push ghcr.io/${{ github.repository_owner }}/fleetpulse-${{ matrix.service }}:${{ github.sha }}
