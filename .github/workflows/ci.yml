@@ -105,12 +105,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # fleetpulse-proto has to be installed to the local repo *first*, as its
+      # own real `install`, before building an image for anything that depends
+      # on it. Running `spring-boot:build-image` directly with -am pulls proto
+      # into the same reactor and tries to run that goal against it too, and
+      # skipping the goal there (see fleetpulse-proto's pom) means its jar
+      # never gets registered for the other modules to resolve in that same
+      # reactor session, even though the jar file exists on disk. A real
+      # `install` doesn't have that problem.
+      - name: Install fleetpulse-proto
+        run: mvn -B -pl fleetpulse-proto install
+
       # Spring Boot can build a container image straight from the Maven build
       # with no Dockerfile at all, via Cloud Native Buildpacks. It figures out
       # the base image, JRE, and layering on its own.
       - name: Build container image
         run: >
-          mvn -B -pl ${{ matrix.service }} -am spring-boot:build-image
+          mvn -B -pl ${{ matrix.service }} spring-boot:build-image
           -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository_owner }}/fleetpulse-${{ matrix.service }}:${{ github.sha }}
 
       - name: Push image
