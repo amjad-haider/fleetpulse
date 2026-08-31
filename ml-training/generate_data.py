@@ -12,6 +12,8 @@ actually has something worth learning beyond what the existing rule-based
 scorer already does.
 """
 
+import pathlib
+
 import numpy as np
 import pandas as pd
 
@@ -82,5 +84,7 @@ def label(df: pd.DataFrame, rng: np.random.Generator) -> np.ndarray:
 
 if __name__ == "__main__":
     dataset = generate(n_rows=15_000)
-    dataset.to_csv("data/telemetry_training_data.csv", index=False)
+    output_path = pathlib.Path("data/telemetry_training_data.csv")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    dataset.to_csv(output_path, index=False)
     print(f"wrote {len(dataset)} rows, {dataset[LABEL_COLUMN].mean():.1%} positive")
