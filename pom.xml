@@ -57,6 +57,7 @@
     <module>fleetpulse-proto</module>
     <module>fleet-service</module>
     <module>telemetry-service</module>
+    <module>health-engine</module>
   </modules>
 
 </project>

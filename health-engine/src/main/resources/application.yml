@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: health-engine
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:fleetpulse_health}
+    username: ${DB_USER:fleetpulse}
+    password: ${DB_PASSWORD:fleetpulse}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: health-engine
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.fleetpulse.health.ingest
+        spring.json.value.default.type: com.fleetpulse.health.ingest.TelemetryReadingEvent
+        spring.json.use.type.headers: false
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+grpc:
+  server:
+    port: ${GRPC_PORT:8083}
+
+fleetpulse:
+  health:
+    telemetry-topic: telemetry.readings
+    alert-topic: fleet.health.alerts
