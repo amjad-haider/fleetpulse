@@ -13,6 +13,16 @@
   <artifactId>fleetpulse-proto</artifactId>
   <packaging>jar</packaging>
 
+  <properties>
+    <!-- this is a shared library, not a runnable service. When CI invokes
+         spring-boot:build-image directly on a service that depends on this
+         module, Maven runs that goal against every project pulled into the
+         reactor (via -am), including this one, and it fails since there's
+         no main class to package. Skip it explicitly rather than working
+         around the reactor composition. -->
+    <spring-boot.build-image.skip>true</spring-boot.build-image.skip>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.grpc</groupId>
