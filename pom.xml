@@ -58,6 +58,7 @@
     <module>fleet-service</module>
     <module>telemetry-service</module>
     <module>health-engine</module>
+    <module>alert-service</module>
   </modules>
 
 </project>
