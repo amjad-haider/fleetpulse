@@ -67,7 +67,7 @@ jobs:
           python generate_data.py
           python -m pytest tests/ -v
 
-  # packages the four long-running backend services into container images and
+  # packages the five long-running backend services into container images and
   # pushes them to GitHub's own registry (ghcr.io). Only runs after both Java
   # and .NET tests pass, and only for real pushes to master, never for pull
   # requests, since a PR build (possibly from someone else's fork) shouldn't
@@ -87,7 +87,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        service: [fleet-service, telemetry-service, health-engine, alert-service]
+        service: [fleet-service, telemetry-service, health-engine, alert-service, gateway-service]
     steps:
       - uses: actions/checkout@v4
 
