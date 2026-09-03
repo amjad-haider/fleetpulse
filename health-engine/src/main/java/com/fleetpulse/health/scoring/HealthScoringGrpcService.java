@@ -9,29 +9,15 @@ import net.devh.boot.grpc.server.service.GrpcService;
 @GrpcService
 public class HealthScoringGrpcService extends HealthScoringGrpc.HealthScoringImplBase {
 
-    private final RiskScorer riskScorer;
+    private final RiskScoringOrchestrator orchestrator;
 
-    public HealthScoringGrpcService(RiskScorer riskScorer) {
-        this.riskScorer = riskScorer;
+    public HealthScoringGrpcService(RiskScoringOrchestrator orchestrator) {
+        this.orchestrator = orchestrator;
     }
 
     @Override
     public void scoreVehicle(HealthScoreRequest request, StreamObserver<HealthScoreResponse> responseObserver) {
-        RiskScorer.ScoreResult result = riskScorer.score(new RiskScorer.RiskInput(
-                request.getEngineTempC(),
-                request.getVibrationMmS(),
-                request.getBrakeWearPct(),
-                request.getFaultCodeCount()
-        ));
-
-        HealthScoreResponse response = HealthScoreResponse.newBuilder()
-                .setVehicleId(request.getVehicleId())
-                .setRiskScore(result.riskScore())
-                .setDecision(result.decision())
-                .setUsedFallback(true) // no trained model wired up yet, this is always the rule engine for now
-                .build();
-
-        responseObserver.onNext(response);
+        responseObserver.onNext(orchestrator.score(request));
         responseObserver.onCompleted();
     }
 }

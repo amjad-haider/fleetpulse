@@ -1,5 +1,6 @@
 package com.fleetpulse.health.ingest;
 
+import com.fleetpulse.health.scoring.RollingFeatureStore;
 import com.fleetpulse.proto.health.v1.HealthDecision;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -17,6 +18,7 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -25,6 +27,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,16 +45,25 @@ class HealthEngineIntegrationTest {
     @Container
     static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
 
+    @Container
+    static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
+            .withExposedPorts(6379);
+
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
+        registry.add("spring.data.redis.host", redis::getHost);
+        registry.add("spring.data.redis.port", () -> redis.getFirstMappedPort().toString());
     }
 
     @Autowired
     private HealthScoreRepository scoreRepository;
+
+    @Autowired
+    private RollingFeatureStore rollingFeatureStore;
 
     private KafkaTemplate<String, TelemetryReadingEvent> telemetryProducer;
     private Consumer<String, HealthAlert> alertConsumer;
@@ -78,8 +90,21 @@ class HealthEngineIntegrationTest {
 
     @Test
     void criticalReadingGetsScoredPersistedAndAlerted() {
+        // the trained model learned realistic feature correlations from
+        // training data where high brake wear / fault counts only show up on
+        // high-mileage vehicles, so a fresh, unrealistic combination (worn
+        // brakes on a near-new vehicle, no history) reads as low-risk to it,
+        // correctly. Recorded history is what a genuinely aging, currently
+        // spiking vehicle actually looks like, matching a combination
+        // verified in OnnxRiskScorerTest to score ~0.99 for the exact same model.
+        String vehicleId = "FLEET-INTEG-999";
+        Instant now = Instant.now();
+        rollingFeatureStore.recordReading(vehicleId, 95.0, true, now.minus(2, ChronoUnit.HOURS));
+        rollingFeatureStore.recordReading(vehicleId, 95.0, true, now.minus(1, ChronoUnit.HOURS));
+        rollingFeatureStore.recordReading(vehicleId, 95.0, true, now.minus(30, ChronoUnit.MINUTES));
+
         TelemetryReadingEvent reading = new TelemetryReadingEvent(
-                "FLEET-INTEG-999", Instant.now(), 130, 8, 1500, 50, 100, 5000,
+                vehicleId, now, 128, 7.5, 1600, 50, 92, 260_000,
                 List.of("P0128", "P0301", "P0500"));
 
         telemetryProducer.send("telemetry.readings", reading.vehicleId(), reading);

@@ -99,18 +99,17 @@ from everything else here.
 - `vehicle-simulator`: C# console app, fakes a fleet of vehicle ECUs pushing telemetry over gRPC
 - `fleet-service`: vehicle/driver registry, JWT auth, ADMIN/FLEET_MANAGER roles that actually differ (the first person to register becomes ADMIN)
 - `telemetry-service`: gRPC ingestion, persists to Postgres, publishes to Kafka
-- `health-engine`: risk scoring, currently rule-based, consumes Kafka + exposes gRPC
+- `health-engine`: risk scoring against the trained ONNX model, with Redis-backed rolling features (30-day averages, recent fault counts) and a circuit breaker that falls back to the rule engine if the model call is failing
 - `alert-service`: turns risk events into notifications, with cooldown so it doesn't spam
 - `ops-dashboard`: Vaadin UI showing vehicles, health scores, and alerts, routed through the gateway
-- `ml-training`: Python, trains a gradient-boosted risk model, exports to ONNX (not wired into health-engine yet)
+- `ml-training`: Python, trains a gradient-boosted risk model, exports to ONNX
 - `gateway-service`: Spring Cloud Gateway, single entry point, validates JWTs centrally so fleet-service, health-engine, and alert-service don't each have to
 - CI/CD: GitHub Actions builds and tests all three stacks on every push, and packages the five backend services into container images (no Dockerfile, Spring Boot's buildpacks support handles that)
 
 ## Still to do
 
-- Load the trained ONNX model into `health-engine` behind a circuit breaker, with the rule engine as fallback. Needs rolling-feature aggregation first (30-day averages, recent fault counts), which needs somewhere to keep per-vehicle history, probably Redis
 - `maintenance-service`: work orders, reconciles predictions against actual maintenance
-- Rate limiting at the gateway (same Redis dependency as above)
+- Rate limiting at the gateway (Redis is already in the stack for health-engine's rolling features)
 - Production Vaadin build for `ops-dashboard` so it can be containerized too
 
 ## Status

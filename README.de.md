@@ -101,18 +101,17 @@ Toolchain-Zweig getrennt vom Rest hier ist.
 - `vehicle-simulator`: C#-Konsolenanwendung, simuliert eine Fahrzeugflotte, die Telemetriedaten per gRPC sendet
 - `fleet-service`: Fahrzeug- und Fahrerregister, JWT-Authentifizierung, ADMIN/FLEET_MANAGER-Rollen mit echtem Unterschied (die erste registrierte Person wird ADMIN)
 - `telemetry-service`: gRPC-Ingestion, Persistierung in Postgres, Veröffentlichung auf Kafka
-- `health-engine`: Risiko-Scoring, aktuell regelbasiert, konsumiert Kafka und stellt gRPC bereit
+- `health-engine`: Risiko-Scoring über das trainierte ONNX-Modell, mit Redis-gestützten Rolling Features (30-Tage-Durchschnitte, aktuelle Fehlercode-Häufigkeit) und einem Circuit Breaker, der bei ausfallendem Modellaufruf auf die Regel-Engine zurückfällt
 - `alert-service`: wandelt Risikoereignisse in Benachrichtigungen um, mit Cooldown gegen Spam
 - `ops-dashboard`: Vaadin-Oberfläche mit Fahrzeugen, Health-Scores und Alerts, läuft über das Gateway
-- `ml-training`: Python, trainiert ein gradient-boosted Risikomodell, Export nach ONNX (noch nicht an health-engine angebunden)
+- `ml-training`: Python, trainiert ein gradient-boosted Risikomodell, Export nach ONNX
 - `gateway-service`: Spring Cloud Gateway, einheitlicher Einstiegspunkt, validiert JWTs zentral, damit fleet-service, health-engine und alert-service das nicht jeweils selbst tun müssen
 - CI/CD: GitHub Actions baut und testet alle drei Stacks bei jedem Push und packt die fünf Backend-Services in Container-Images (kein Dockerfile, das übernimmt Spring Boots Buildpacks-Unterstützung)
 
 ## Noch offen
 
-- trainiertes ONNX-Modell in `health-engine` laden, abgesichert durch einen Circuit Breaker mit der Regel-Engine als Fallback. Braucht vorher Rolling-Feature-Aggregation (30-Tage-Durchschnitte, aktuelle Fehlercode-Häufigkeit), wofür wiederum irgendwo eine Historie pro Fahrzeug liegen muss, vermutlich Redis
 - `maintenance-service`: Arbeitsaufträge, gleicht Vorhersagen mit tatsächlicher Wartung ab
-- Rate Limiting im Gateway (dieselbe Redis-Abhängigkeit wie oben)
+- Rate Limiting im Gateway (Redis steht durch die Rolling Features von health-engine bereits im Stack)
 - Vaadin-Produktionsbuild für `ops-dashboard`, damit es ebenfalls containerisiert werden kann
 
 ## Status

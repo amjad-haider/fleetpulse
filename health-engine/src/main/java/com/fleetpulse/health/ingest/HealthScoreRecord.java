@@ -42,6 +42,9 @@ public class HealthScoreRecord {
     @Column(nullable = false)
     private HealthDecision decision;
 
+    @Column(name = "used_fallback", nullable = false)
+    private boolean usedFallback;
+
     @Column(name = "scored_at", nullable = false, updatable = false)
     private Instant scoredAt;
 

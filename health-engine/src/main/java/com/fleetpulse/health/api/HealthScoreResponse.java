@@ -11,6 +11,7 @@ public record HealthScoreResponse(
         String vehicleId,
         double riskScore,
         HealthDecision decision,
+        boolean usedFallback,
         Instant scoredAt
 ) {
     static HealthScoreResponse from(HealthScoreRecord record) {
@@ -19,6 +20,7 @@ public record HealthScoreResponse(
                 record.getVehicleId(),
                 record.getRiskScore(),
                 record.getDecision(),
+                record.isUsedFallback(),
                 record.getScoredAt()
         );
     }

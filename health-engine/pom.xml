@@ -16,6 +16,8 @@
   <properties>
     <grpc-spring.version>3.1.0.RELEASE</grpc-spring.version>
     <testcontainers.version>1.20.4</testcontainers.version>
+    <resilience4j.version>2.4.0</resilience4j.version>
+    <onnxruntime.version>1.27.0</onnxruntime.version>
   </properties>
 
   <dependencies>
@@ -58,6 +60,32 @@
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.microsoft.onnxruntime</groupId>
+      <artifactId>onnxruntime</artifactId>
+      <version>${onnxruntime.version}</version>
+    </dependency>
+
+    <!-- resilience4j-spring-boot3 expects actuator + aop at runtime -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-aop</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-spring-boot3</artifactId>
+      <version>${resilience4j.version}</version>
     </dependency>
 
     <dependency>
