@@ -78,7 +78,14 @@ def train(df: pd.DataFrame) -> tuple[GradientBoostingClassifier, dict, np.ndarra
 
 def export_to_onnx(model: GradientBoostingClassifier, X_test: np.ndarray) -> None:
     initial_type = [("input", FloatTensorType([None, len(FEATURE_COLUMNS)]))]
-    onnx_model = convert_sklearn(model, initial_types=initial_type, target_opset=17)
+    # skl2onnx defaults a classifier's probability output to a ZipMap (a list
+    # of {class_label: probability} dicts), which is convenient in Python but
+    # a pain to consume from Java's ONNX Runtime bindings. This model only
+    # ever gets served from health-engine (Java), never from Python, so
+    # zipmap=False turns that output into a plain float tensor instead:
+    # much simpler on the consuming side, for zero cost on this one.
+    options = {id(model): {"zipmap": False}}
+    onnx_model = convert_sklearn(model, initial_types=initial_type, options=options, target_opset=17)
 
     MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(MODEL_PATH, "wb") as f:
@@ -97,8 +104,10 @@ def verify_onnx_matches_sklearn(model: GradientBoostingClassifier, X_test: np.nd
     sample = X_test[:200]
     sklearn_probs = model.predict_proba(sample)[:, 1]
 
+    # with zipmap=False, output[1] is a plain (N, 2) float array: column 0 is
+    # P(class 0), column 1 is P(class 1) - the risk score health-engine wants
     onnx_output = session.run(None, {input_name: sample})
-    onnx_probs = np.array([p[1] for p in onnx_output[1]])
+    onnx_probs = onnx_output[1][:, 1]
 
     max_diff = np.max(np.abs(sklearn_probs - onnx_probs))
     if max_diff > 1e-4:
