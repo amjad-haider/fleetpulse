@@ -103,13 +103,12 @@ from everything else here.
 - `alert-service`: turns risk events into notifications, with cooldown so it doesn't spam
 - `ops-dashboard`: Vaadin UI showing vehicles, health scores, and alerts, routed through the gateway
 - `ml-training`: Python, trains a gradient-boosted risk model, exports to ONNX
-- `gateway-service`: Spring Cloud Gateway, single entry point, validates JWTs centrally so fleet-service, health-engine, and alert-service don't each have to
+- `gateway-service`: Spring Cloud Gateway, single entry point, validates JWTs centrally so fleet-service, health-engine, and alert-service don't each have to, and rate-limits every route through Redis (per authenticated user where there's a token, per IP otherwise)
 - CI/CD: GitHub Actions builds and tests all three stacks on every push, and packages the five backend services into container images (no Dockerfile, Spring Boot's buildpacks support handles that)
 
 ## Still to do
 
 - `maintenance-service`: work orders, reconciles predictions against actual maintenance
-- Rate limiting at the gateway (Redis is already in the stack for health-engine's rolling features)
 - Production Vaadin build for `ops-dashboard` so it can be containerized too
 
 ## Status

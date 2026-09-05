@@ -1,5 +1,6 @@
 package com.fleetpulse.gateway.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private static final String PUBLIC_PATH_PREFIX = "/api/v1/auth/";
 
+    // set once the token's validated, so the rate limiter's key resolver can
+    // key by the actual user instead of falling back to their IP
+    public static final String SUBJECT_ATTRIBUTE = "fleetpulse.subject";
+
     private final JwtValidator jwtValidator;
 
     public JwtAuthenticationFilter(JwtValidator jwtValidator) {
@@ -43,13 +48,15 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return unauthorized(exchange);
         }
 
+        Claims claims;
         try {
-            jwtValidator.validate(header.substring(7));
+            claims = jwtValidator.validate(header.substring(7));
         } catch (JwtException | IllegalArgumentException ex) {
             log.debug("rejected request to {}: {}", path, ex.getMessage());
             return unauthorized(exchange);
         }
 
+        exchange.getAttributes().put(SUBJECT_ATTRIBUTE, claims.getSubject());
         return chain.filter(exchange);
     }
 

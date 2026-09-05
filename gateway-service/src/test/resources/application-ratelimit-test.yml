@@ -1,0 +1,15 @@
+# Spring Boot merges list properties per-source, not per-field: overriding
+# just spring.cloud.gateway.default-filters[0].args.* from a
+# DynamicPropertySource shadows the whole list entry and drops its "name",
+# breaking route setup. So this test profile redeclares the filter in full,
+# with a burst capacity small enough to exhaust in a handful of requests.
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 1
+            redis-rate-limiter.burstCapacity: 2
+            redis-rate-limiter.requestedTokens: 1
+            key-resolver: "#{@userOrIpKeyResolver}"

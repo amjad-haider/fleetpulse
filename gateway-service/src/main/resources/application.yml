@@ -4,8 +4,22 @@ server:
 spring:
   application:
     name: gateway-service
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   cloud:
     gateway:
+      # applied to every route below: 10 requests/sec sustained per caller,
+      # bursting up to 20. Keyed by JWT subject where there is one, by IP
+      # otherwise (see UserOrIpKeyResolver) — so this covers both the
+      # protected API routes and unauthenticated login/register spam.
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 10
+            redis-rate-limiter.burstCapacity: 20
+            key-resolver: "#{@userOrIpKeyResolver}"
       routes:
         - id: fleet-service-auth
           uri: ${FLEET_SERVICE_URL:http://localhost:8081}

@@ -105,13 +105,12 @@ Toolchain-Zweig getrennt vom Rest hier ist.
 - `alert-service`: wandelt Risikoereignisse in Benachrichtigungen um, mit Cooldown gegen Spam
 - `ops-dashboard`: Vaadin-Oberfläche mit Fahrzeugen, Health-Scores und Alerts, läuft über das Gateway
 - `ml-training`: Python, trainiert ein gradient-boosted Risikomodell, Export nach ONNX
-- `gateway-service`: Spring Cloud Gateway, einheitlicher Einstiegspunkt, validiert JWTs zentral, damit fleet-service, health-engine und alert-service das nicht jeweils selbst tun müssen
+- `gateway-service`: Spring Cloud Gateway, einheitlicher Einstiegspunkt, validiert JWTs zentral, damit fleet-service, health-engine und alert-service das nicht jeweils selbst tun müssen, und limitiert jede Route über Redis (pro authentifiziertem Nutzer, sofern ein Token vorliegt, sonst pro IP)
 - CI/CD: GitHub Actions baut und testet alle drei Stacks bei jedem Push und packt die fünf Backend-Services in Container-Images (kein Dockerfile, das übernimmt Spring Boots Buildpacks-Unterstützung)
 
 ## Noch offen
 
 - `maintenance-service`: Arbeitsaufträge, gleicht Vorhersagen mit tatsächlicher Wartung ab
-- Rate Limiting im Gateway (Redis steht durch die Rolling Features von health-engine bereits im Stack)
 - Vaadin-Produktionsbuild für `ops-dashboard`, damit es ebenfalls containerisiert werden kann
 
 ## Status
