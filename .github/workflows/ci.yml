@@ -67,17 +67,14 @@ jobs:
           python generate_data.py
           python -m pytest tests/ -v
 
-  # packages the five long-running backend services into container images and
+  # packages the six long-running backend services into container images and
   # pushes them to GitHub's own registry (ghcr.io). Only runs after both Java
   # and .NET tests pass, and only for real pushes to master, never for pull
   # requests, since a PR build (possibly from someone else's fork) shouldn't
   # get credentials to publish images.
   #
-  # ops-dashboard is deliberately left out: it needs a Vaadin production
-  # frontend build first (today it only runs in dev mode), that's a separate
-  # piece of work. vehicle-simulator and ml-training aren't long-running
-  # services you'd deploy the same way, so they don't get container images
-  # either.
+  # vehicle-simulator and ml-training aren't long-running services you'd
+  # deploy the same way, so they don't get container images.
   build-images:
     needs: [test-java, test-dotnet]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -87,7 +84,13 @@ jobs:
       packages: write
     strategy:
       matrix:
-        service: [fleet-service, telemetry-service, health-engine, alert-service, gateway-service]
+        service: [fleet-service, telemetry-service, health-engine, alert-service, gateway-service, ops-dashboard]
+        include:
+          # ops-dashboard needs its Vaadin frontend built for real (minified,
+          # fingerprinted, no dev tools) - the "production" Maven profile
+          # does that; the other services don't have (or need) one.
+          - service: ops-dashboard
+            maven-profile: "-Pproduction"
     steps:
       - uses: actions/checkout@v7
 
@@ -127,7 +130,7 @@ jobs:
       # the base image, JRE, and layering on its own.
       - name: Build container image
         run: >
-          mvn -B -pl ${{ matrix.service }} spring-boot:build-image
+          mvn -B -pl ${{ matrix.service }} spring-boot:build-image ${{ matrix.maven-profile }}
           -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository_owner }}/fleetpulse-${{ matrix.service }}:${{ github.sha }}
 
       - name: Push image

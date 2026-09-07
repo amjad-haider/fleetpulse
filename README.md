@@ -101,15 +101,14 @@ from everything else here.
 - `telemetry-service`: gRPC ingestion, persists to Postgres, publishes to Kafka
 - `health-engine`: risk scoring against the trained ONNX model, with Redis-backed rolling features (30-day averages, recent fault counts) and a circuit breaker that falls back to the rule engine if the model call is failing
 - `alert-service`: turns risk events into notifications, with cooldown so it doesn't spam
-- `ops-dashboard`: Vaadin UI showing vehicles, health scores, and alerts, routed through the gateway
+- `ops-dashboard`: Vaadin UI showing vehicles, health scores, and alerts, routed through the gateway, with a real production frontend build (minified, fingerprinted assets, no dev tools) for its container image
 - `ml-training`: Python, trains a gradient-boosted risk model, exports to ONNX
 - `gateway-service`: Spring Cloud Gateway, single entry point, validates JWTs centrally so fleet-service, health-engine, and alert-service don't each have to, and rate-limits every route through Redis (per authenticated user where there's a token, per IP otherwise)
-- CI/CD: GitHub Actions builds and tests all three stacks on every push, and packages the five backend services into container images (no Dockerfile, Spring Boot's buildpacks support handles that)
+- CI/CD: GitHub Actions builds and tests all three stacks on every push, and packages all six backend/frontend services into container images (no Dockerfile, Spring Boot's buildpacks support handles that)
 
 ## Still to do
 
 - `maintenance-service`: work orders, reconciles predictions against actual maintenance
-- Production Vaadin build for `ops-dashboard` so it can be containerized too
 
 ## Status
 

@@ -54,4 +54,48 @@
     </plugins>
   </build>
 
+  <profiles>
+    <!-- dev mode (no -P flag) compiles the frontend on the fly and reloads
+         on save, which is what you want locally, but ships an unminified
+         bundle plus Vaadin's dev tools overlay - fine for iterating on a
+         view, not for a container image. -Pproduction runs the real Vite
+         production build instead and drops vaadin-dev, so the image built
+         with it is the same jar you'd actually deploy. -->
+    <profile>
+      <id>production</id>
+      <properties>
+        <vaadin.productionMode>true</vaadin.productionMode>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.vaadin</groupId>
+          <artifactId>vaadin-core</artifactId>
+          <exclusions>
+            <exclusion>
+              <groupId>com.vaadin</groupId>
+              <artifactId>vaadin-dev</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-maven-plugin</artifactId>
+            <version>${vaadin.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>build-frontend</goal>
+                </goals>
+                <phase>compile</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>
