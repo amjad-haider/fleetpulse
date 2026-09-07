@@ -1,0 +1,14 @@
+/* FleetPulse brand: a teal "pulse" color instead of Lumo's default blue,
+   plus a couple of layout tokens the views share (app bar, page background,
+   card shadow) so LoginView and DashboardView don't each invent their own. */
+html {
+  --lumo-primary-color: #0e7c86;
+  --lumo-primary-color-50pct: rgba(14, 124, 134, 0.5);
+  --lumo-primary-color-10pct: rgba(14, 124, 134, 0.1);
+  --lumo-primary-text-color: #0e7c86;
+  --lumo-primary-contrast-color: #ffffff;
+
+  --fp-appbar-bg: #101a2b;
+  --fp-page-bg: #f4f6f8;
+  --fp-card-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
+}
