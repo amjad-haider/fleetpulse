@@ -6,7 +6,11 @@ services:
       POSTGRES_PASSWORD: fleetpulse
       POSTGRES_DB: fleetpulse_fleet
     ports:
-      - "5432:5432"
+      # bound to loopback only - Docker's default "5432:5432" publishes on
+      # every host interface, including a public one if the host has no NAT
+      # in front of it, which is exactly how this got flagged as an open,
+      # unauthenticated service reachable from the internet
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
@@ -26,12 +30,15 @@ services:
       # `docker compose up` just works with no extra setup step first
       CLUSTER_ID: 7MdXSiQ_RsywjDOlo2UbvQ
     ports:
-      - "9092:9092"
+      - "127.0.0.1:9092:9092"
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      # see the note on postgres above - Redis has no auth configured at
+      # all by default, so an unrestricted publish here means anyone on the
+      # internet gets full read/write access to it
+      - "127.0.0.1:6379:6379"
 
 volumes:
   postgres-data:
