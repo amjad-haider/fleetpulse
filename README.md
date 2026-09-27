@@ -22,7 +22,8 @@ know well from my M.Sc. in commercial vehicle technology.
 | `telemetry-service` | gRPC ingestion from vehicles, persists to Postgres, publishes to Kafka | 8082 |
 | `alert-service` | consumes health alerts, notifications with a cooldown so it doesn't spam | 8084 |
 | `health-engine` | risk scoring (rule-based today), consumes Kafka, exposes gRPC | 8085 (REST), 8083 (gRPC) |
-| `ops-dashboard` | Vaadin UI: vehicles, health scores, alerts | 8090 |
+| `maintenance-service` | work orders, reconciles SERVICE_NOW predictions against actual completed maintenance | 8086 |
+| `ops-dashboard` | Vaadin UI: vehicles, health scores, alerts, work orders | 8090 |
 | `vehicle-simulator` | C# console app, fakes a fleet of vehicle ECUs pushing telemetry | - |
 | `ml-training` | Python, trains a gradient-boosted risk model, exports to ONNX | - |
 | `fleetpulse-proto` | shared gRPC contracts for telemetry and health scoring | - |
@@ -36,7 +37,7 @@ database-per-service, no shared schema.
 
 Needs Docker, JDK 17, Maven, .NET 10 SDK, and Python 3.11/3.12.
 
-Start the infra (Postgres with all four databases, Kafka in KRaft mode):
+Start the infra (Postgres with all five databases, Kafka in KRaft mode):
 
 ```bash
 docker compose up -d
@@ -61,6 +62,7 @@ mvn -pl fleet-service spring-boot:run
 mvn -pl telemetry-service spring-boot:run
 mvn -pl health-engine spring-boot:run
 mvn -pl alert-service spring-boot:run
+mvn -pl maintenance-service spring-boot:run
 mvn -pl gateway-service spring-boot:run
 mvn -pl ops-dashboard spring-boot:run
 ```
@@ -101,14 +103,11 @@ from everything else here.
 - `telemetry-service`: gRPC ingestion, persists to Postgres, publishes to Kafka
 - `health-engine`: risk scoring against the trained ONNX model, with Redis-backed rolling features (30-day averages, recent fault counts) and a circuit breaker that falls back to the rule engine if the model call is failing
 - `alert-service`: turns risk events into notifications, with cooldown so it doesn't spam
-- `ops-dashboard`: Vaadin UI showing vehicles, health scores, and alerts, routed through the gateway, with a real production frontend build (minified, fingerprinted assets, no dev tools) for its container image
+- `maintenance-service`: tracks work orders and reconciles SERVICE_NOW predictions against what actually got fixed, so a prediction that never got followed up on shows up as overdue rather than silently disappearing
+- `ops-dashboard`: Vaadin UI showing vehicles, health scores, alerts, and work orders (with a reconciliation view and a form to open new work orders), routed through the gateway, with a real production frontend build (minified, fingerprinted assets, no dev tools) for its container image
 - `ml-training`: Python, trains a gradient-boosted risk model, exports to ONNX
-- `gateway-service`: Spring Cloud Gateway, single entry point, validates JWTs centrally so fleet-service, health-engine, and alert-service don't each have to, and rate-limits every route through Redis (per authenticated user where there's a token, per IP otherwise)
-- CI/CD: GitHub Actions builds and tests all three stacks on every push, and packages all six backend/frontend services into container images (no Dockerfile, Spring Boot's buildpacks support handles that)
-
-## Still to do
-
-- `maintenance-service`: work orders, reconciles predictions against actual maintenance
+- `gateway-service`: Spring Cloud Gateway, single entry point, validates JWTs centrally so fleet-service, health-engine, alert-service, and maintenance-service don't each have to, and rate-limits every route through Redis (per authenticated user where there's a token, per IP otherwise)
+- CI/CD: GitHub Actions builds and tests all three stacks on every push, and packages all seven backend/frontend services into container images (no Dockerfile, Spring Boot's buildpacks support handles that)
 
 ## Status
 

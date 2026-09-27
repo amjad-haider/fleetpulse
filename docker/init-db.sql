@@ -4,3 +4,4 @@
 CREATE DATABASE fleetpulse_telemetry;
 CREATE DATABASE fleetpulse_health;
 CREATE DATABASE fleetpulse_alert;
+CREATE DATABASE fleetpulse_maintenance;

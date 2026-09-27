@@ -1,0 +1,36 @@
+server:
+  port: ${SERVER_PORT:8086}
+
+spring:
+  application:
+    name: maintenance-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:fleetpulse_maintenance}
+    username: ${DB_USER:fleetpulse}
+    password: ${DB_PASSWORD:fleetpulse}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: maintenance-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.fleetpulse.maintenance.ingest
+        spring.json.value.default.type: com.fleetpulse.maintenance.ingest.HealthAlertEvent
+        spring.json.use.type.headers: false
+
+fleetpulse:
+  alert:
+    topic: fleet.health.alerts
+  maintenance:
+    # how long after a SERVICE_NOW alert we still expect to see a completed
+    # work order before calling the vehicle overdue
+    response-window: P14D

@@ -37,6 +37,10 @@ spring:
           uri: ${ALERT_SERVICE_URL:http://localhost:8084}
           predicates:
             - Path=/api/v1/alerts/**
+        - id: maintenance-service
+          uri: ${MAINTENANCE_SERVICE_URL:http://localhost:8086}
+          predicates:
+            - Path=/api/v1/work-orders/**
 
 security:
   jwt:

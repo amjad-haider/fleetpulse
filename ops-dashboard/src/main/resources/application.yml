@@ -15,3 +15,4 @@ fleetpulse:
     fleet-service-url: ${FLEET_SERVICE_URL:http://localhost:8080}
     health-engine-url: ${HEALTH_ENGINE_URL:http://localhost:8080}
     alert-service-url: ${ALERT_SERVICE_URL:http://localhost:8080}
+    maintenance-service-url: ${MAINTENANCE_SERVICE_URL:http://localhost:8080}

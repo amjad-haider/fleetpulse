@@ -11,7 +11,8 @@ on:
 
 jobs:
   # the Java multi-module Maven project: fleetpulse-proto, fleet-service,
-  # telemetry-service, health-engine, alert-service, ops-dashboard
+  # telemetry-service, health-engine, alert-service, maintenance-service,
+  # ops-dashboard
   test-java:
     runs-on: ubuntu-latest
     steps:
@@ -84,7 +85,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        service: [fleet-service, telemetry-service, health-engine, alert-service, gateway-service, ops-dashboard]
+        service: [fleet-service, telemetry-service, health-engine, alert-service, maintenance-service, gateway-service, ops-dashboard]
         include:
           # ops-dashboard needs its Vaadin frontend built for real (minified,
           # fingerprinted, no dev tools) - the "production" Maven profile

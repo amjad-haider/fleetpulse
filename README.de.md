@@ -24,7 +24,8 @@ Nutzfahrzeugtechnik gut kenne.
 | `telemetry-service` | gRPC-Ingestion von Fahrzeugen, Persistierung in Postgres, Veröffentlichung auf Kafka | 8082 |
 | `alert-service` | konsumiert Health-Alerts, Benachrichtigungen mit Cooldown gegen Spam | 8084 |
 | `health-engine` | Risiko-Scoring (aktuell regelbasiert), konsumiert Kafka, stellt gRPC bereit | 8085 (REST), 8083 (gRPC) |
-| `ops-dashboard` | Vaadin-Oberfläche: Fahrzeuge, Health-Scores, Alerts | 8090 |
+| `maintenance-service` | Arbeitsaufträge, gleicht SERVICE_NOW-Vorhersagen mit tatsächlich abgeschlossener Wartung ab | 8086 |
+| `ops-dashboard` | Vaadin-Oberfläche: Fahrzeuge, Health-Scores, Alerts, Arbeitsaufträge | 8090 |
 | `vehicle-simulator` | C#-Konsolenanwendung, simuliert eine Fahrzeugflotte, die Telemetrie sendet | - |
 | `ml-training` | Python, trainiert ein gradient-boosted Risikomodell, Export nach ONNX | - |
 | `fleetpulse-proto` | gemeinsame gRPC-Contracts für Telemetrie und Health-Scoring | - |
@@ -38,7 +39,7 @@ seine eigene, Database-per-Service, kein gemeinsames Schema.
 
 Braucht Docker, JDK 17, Maven, .NET 10 SDK und Python 3.11/3.12.
 
-Infrastruktur starten (Postgres mit allen vier Datenbanken, Kafka im KRaft-Modus):
+Infrastruktur starten (Postgres mit allen fünf Datenbanken, Kafka im KRaft-Modus):
 
 ```bash
 docker compose up -d
@@ -63,6 +64,7 @@ mvn -pl fleet-service spring-boot:run
 mvn -pl telemetry-service spring-boot:run
 mvn -pl health-engine spring-boot:run
 mvn -pl alert-service spring-boot:run
+mvn -pl maintenance-service spring-boot:run
 mvn -pl gateway-service spring-boot:run
 mvn -pl ops-dashboard spring-boot:run
 ```
@@ -103,14 +105,11 @@ Toolchain-Zweig getrennt vom Rest hier ist.
 - `telemetry-service`: gRPC-Ingestion, Persistierung in Postgres, Veröffentlichung auf Kafka
 - `health-engine`: Risiko-Scoring über das trainierte ONNX-Modell, mit Redis-gestützten Rolling Features (30-Tage-Durchschnitte, aktuelle Fehlercode-Häufigkeit) und einem Circuit Breaker, der bei ausfallendem Modellaufruf auf die Regel-Engine zurückfällt
 - `alert-service`: wandelt Risikoereignisse in Benachrichtigungen um, mit Cooldown gegen Spam
-- `ops-dashboard`: Vaadin-Oberfläche mit Fahrzeugen, Health-Scores und Alerts, läuft über das Gateway, mit einem echten Produktions-Frontend-Build (minifiziert, fingerprinted Assets, ohne Dev-Tools) für das Container-Image
+- `maintenance-service`: verwaltet Arbeitsaufträge und gleicht SERVICE_NOW-Vorhersagen mit dem ab, was tatsächlich behoben wurde, sodass eine Vorhersage, der nie nachgegangen wurde, als überfällig auftaucht statt stillschweigend zu verschwinden
+- `ops-dashboard`: Vaadin-Oberfläche mit Fahrzeugen, Health-Scores, Alerts und Arbeitsaufträgen (mit Abgleichsansicht und Formular für neue Arbeitsaufträge), läuft über das Gateway, mit einem echten Produktions-Frontend-Build (minifiziert, fingerprinted Assets, ohne Dev-Tools) für das Container-Image
 - `ml-training`: Python, trainiert ein gradient-boosted Risikomodell, Export nach ONNX
-- `gateway-service`: Spring Cloud Gateway, einheitlicher Einstiegspunkt, validiert JWTs zentral, damit fleet-service, health-engine und alert-service das nicht jeweils selbst tun müssen, und limitiert jede Route über Redis (pro authentifiziertem Nutzer, sofern ein Token vorliegt, sonst pro IP)
-- CI/CD: GitHub Actions baut und testet alle drei Stacks bei jedem Push und packt alle sechs Backend-/Frontend-Services in Container-Images (kein Dockerfile, das übernimmt Spring Boots Buildpacks-Unterstützung)
-
-## Noch offen
-
-- `maintenance-service`: Arbeitsaufträge, gleicht Vorhersagen mit tatsächlicher Wartung ab
+- `gateway-service`: Spring Cloud Gateway, einheitlicher Einstiegspunkt, validiert JWTs zentral, damit fleet-service, health-engine, alert-service und maintenance-service das nicht jeweils selbst tun müssen, und limitiert jede Route über Redis (pro authentifiziertem Nutzer, sofern ein Token vorliegt, sonst pro IP)
+- CI/CD: GitHub Actions baut und testet alle drei Stacks bei jedem Push und packt alle sieben Backend-/Frontend-Services in Container-Images (kein Dockerfile, das übernimmt Spring Boots Buildpacks-Unterstützung)
 
 ## Status
 
