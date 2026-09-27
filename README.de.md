@@ -13,7 +13,15 @@ zeigt den Zustand der Flotte auf einen Blick.
 Ich baue das Projekt, um praktische Erfahrung mit einem Stack zu sammeln, den
 ich im Arbeitsalltag nicht nutze (gRPC, Kafka, Spring-Microservices, Vaadin).
 
+## Demo
+
+![FleetPulse Dashboard Demo](docs/dashboard-demo.gif)
+
 ## Architektur
+
+![FleetPulse Architektur](docs/architecture-diagram.svg)
+
+
 
 | Service | Verantwortung | Port |
 |---|---|---|

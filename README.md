@@ -11,7 +11,15 @@ down, and an ops dashboard shows fleet health at a glance.
 
 Building this to get hands-on with a stack with(gRPC, Kafka, Spring microservices, Vaadin).
 
+## Demo
+
+![FleetPulse dashboard demo](docs/dashboard-demo.gif)
+
 ## Architecture
+
+![FleetPulse architecture](docs/architecture-diagram.svg)
+
+
 
 | Service | Responsibility | Port |
 |---|---|---|

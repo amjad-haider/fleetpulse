@@ -1,0 +1,79 @@
+<svg viewBox="0 0 1100 400" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b6472"/>
+    </marker>
+  </defs>
+
+  <!-- background card -->
+  <rect x="0" y="0" width="1100" height="400" rx="14" fill="#f3f5f7" stroke="#d7dce2" stroke-width="1"/>
+
+  <!-- ===== Access layer (row 1) ===== -->
+  <rect x="30" y="30" width="190" height="56" rx="8" fill="#ffffff" stroke="#2e5266" stroke-width="1.6"/>
+  <text x="125" y="63" text-anchor="middle" font-size="15" font-weight="600" fill="#1c2430">Ops Dashboard</text>
+
+  <rect x="300" y="30" width="210" height="56" rx="8" fill="#ffffff" stroke="#2e5266" stroke-width="1.6"/>
+  <text x="405" y="63" text-anchor="middle" font-size="15" font-weight="600" fill="#1c2430">Gateway Service</text>
+
+  <rect x="580" y="30" width="170" height="56" rx="8" fill="#ffffff" stroke="#2e5266" stroke-width="1.6"/>
+  <text x="665" y="63" text-anchor="middle" font-size="15" font-weight="600" fill="#1c2430">Fleet Service</text>
+
+  <!-- Dashboard -> Gateway -->
+  <line x1="220" y1="58" x2="296" y2="58" stroke="#5b6472" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="258" y="49" text-anchor="middle" font-size="11.5" fill="#5b6472">REST + JWT</text>
+
+  <!-- Gateway -> Fleet Service -->
+  <line x1="510" y1="58" x2="576" y2="58" stroke="#5b6472" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="543" y="49" text-anchor="middle" font-size="11.5" fill="#5b6472">auth</text>
+
+  <!-- Gateway -> Health Engine / Alert / Maintenance (fan out) -->
+  <line x1="380" y1="86" x2="545" y2="166" stroke="#5b6472" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="400" y1="86" x2="755" y2="166" stroke="#5b6472" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="420" y1="86" x2="965" y2="166" stroke="#5b6472" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="405" y="104" text-anchor="middle" font-size="11.5" fill="#5b6472">routes REST requests to &#8594;</text>
+
+  <!-- ===== Data pipeline (row 2) ===== -->
+  <rect x="30" y="170" width="170" height="56" rx="8" fill="#ffffff" stroke="#2e5266" stroke-width="1.6" stroke-dasharray="6,4"/>
+  <text x="115" y="196" text-anchor="middle" font-size="15" font-weight="600" fill="#1c2430">Vehicle Simulator</text>
+  <text x="115" y="213" text-anchor="middle" font-size="10.5" fill="#5b6472">(simulated fleet)</text>
+
+  <rect x="250" y="170" width="170" height="56" rx="8" fill="#ffffff" stroke="#2e5266" stroke-width="1.6"/>
+  <text x="335" y="203" text-anchor="middle" font-size="15" font-weight="600" fill="#1c2430">Telemetry Service</text>
+
+  <rect x="460" y="170" width="170" height="56" rx="8" fill="#ffffff" stroke="#2e5266" stroke-width="1.6"/>
+  <text x="545" y="203" text-anchor="middle" font-size="15" font-weight="600" fill="#1c2430">Health Engine</text>
+
+  <rect x="670" y="170" width="170" height="56" rx="8" fill="#ffffff" stroke="#2e5266" stroke-width="1.6"/>
+  <text x="755" y="203" text-anchor="middle" font-size="15" font-weight="600" fill="#1c2430">Alert Service</text>
+
+  <rect x="880" y="170" width="180" height="56" rx="8" fill="#ffffff" stroke="#2e5266" stroke-width="1.6"/>
+  <text x="970" y="203" text-anchor="middle" font-size="15" font-weight="600" fill="#1c2430">Maintenance Service</text>
+
+  <!-- Simulator -> Telemetry -->
+  <line x1="200" y1="198" x2="246" y2="198" stroke="#5b6472" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="223" y="189" text-anchor="middle" font-size="11" fill="#5b6472">gRPC</text>
+
+  <!-- ===== Kafka spine ===== -->
+  <rect x="250" y="270" width="810" height="34" rx="17" fill="#b8632a"/>
+  <text x="655" y="292" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff" letter-spacing="0.5">KAFKA &#8212; event bus</text>
+
+  <!-- Telemetry -> Kafka (publish) -->
+  <line x1="335" y1="226" x2="335" y2="266" stroke="#5b6472" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="335" y="250" text-anchor="middle" font-size="10.5" fill="#5b6472">telemetry.raw</text>
+
+  <!-- Health Engine <-> Kafka (consume telemetry, publish alerts) -->
+  <line x1="545" y1="266" x2="545" y2="230" stroke="#5b6472" stroke-width="1.75" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+  <text x="545" y="250" text-anchor="middle" font-size="10" fill="#5b6472">telemetry.raw /</text>
+  <text x="545" y="261" text-anchor="middle" font-size="10" fill="#5b6472">health.alerts</text>
+
+  <!-- Kafka -> Alert Service (consume) -->
+  <line x1="755" y1="266" x2="755" y2="230" stroke="#5b6472" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="755" y="250" text-anchor="middle" font-size="10.5" fill="#5b6472">health.alerts</text>
+
+  <!-- Kafka -> Maintenance Service (consume) -->
+  <line x1="970" y1="266" x2="970" y2="230" stroke="#5b6472" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="970" y="250" text-anchor="middle" font-size="10.5" fill="#5b6472">health.alerts</text>
+
+  <!-- ===== footer note ===== -->
+  <text x="30" y="380" font-size="11" fill="#5b6472">Solid boxes = FleetPulse services (own database each). Dashed box = external test data source.</text>
+</svg>
