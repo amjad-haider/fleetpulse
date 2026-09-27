@@ -11,9 +11,7 @@ gewartet werden müssen, bevor es zu einem Ausfall kommt, und ein Dashboard
 zeigt den Zustand der Flotte auf einen Blick.
 
 Ich baue das Projekt, um praktische Erfahrung mit einem Stack zu sammeln, den
-ich im Arbeitsalltag nicht nutze (gRPC, Kafka, Spring-Microservices, Vaadin),
-und bleibe dabei nah an einem Bereich, den ich aus meinem Masterstudium in
-Nutzfahrzeugtechnik gut kenne.
+ich im Arbeitsalltag nicht nutze (gRPC, Kafka, Spring-Microservices, Vaadin).
 
 ## Architektur
 
