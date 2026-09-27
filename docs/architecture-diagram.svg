@@ -75,5 +75,6 @@
   <text x="970" y="250" text-anchor="middle" font-size="10.5" fill="#5b6472">health.alerts</text>
 
   <!-- ===== footer note ===== -->
-  <text x="30" y="380" font-size="11" fill="#5b6472">Solid boxes = FleetPulse services (own database each). Dashed box = external test data source.</text>
+  <text x="30" y="368" font-size="11" fill="#5b6472">Fleet Service, Telemetry Service, Health Engine, Alert Service and Maintenance Service each have their own Postgres database.</text>
+  <text x="30" y="384" font-size="11" fill="#5b6472">Gateway Service and Ops Dashboard don't store data themselves. Dashed box = external test data source.</text>
 </svg>
