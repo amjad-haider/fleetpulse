@@ -9,9 +9,7 @@ stream sensor telemetry (engine temp, vibration, RPM, fault codes) over gRPC, a
 scoring engine flags the ones that need maintenance before they actually break
 down, and an ops dashboard shows fleet health at a glance.
 
-Building this to get hands-on with a stack I don't use day to day at work
-(gRPC, Kafka, Spring microservices, Vaadin) while staying close to a domain I
-know well from my M.Sc. in commercial vehicle technology.
+Building this to get hands-on with a stack with(gRPC, Kafka, Spring microservices, Vaadin).
 
 ## Architecture
 
